@@ -19,19 +19,19 @@ export class TransactionService {
     ) {}
 
     async findById(id: string): Promise<Transaction> {
-        const transaction = await this.transactionRepository.findOneBy({ transactionExternalId: id });
-        const type = await this.statusServide.findTypeById(transaction.transactionTypeId);
-        const status = await this.statusServide.findStatusById(transaction.transactionStatusId);
+        const transaction = await this.transactionRepository.find({
+            relations: ['transactionType', 'transactionStatus'],
+            where: { transactionExternalId: id },
+            take: 1,
+        })
 
-        return {
-            ...transaction,
-            transactionType: type,
-            transactionStatus: status,
-        };
+        return transaction[0]
     }
 
     async findAll(): Promise<Transaction[]> {
-        return await this.transactionRepository.find();
+        return await this.transactionRepository.find({
+            relations: ['transactionType', 'transactionStatus']
+        });
     }
 
     async create(transactionInput: CreateTransactionInput): Promise<Transaction> {
